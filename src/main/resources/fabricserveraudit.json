@@ -1,0 +1,9 @@
+{
+  "$schema": "../../schema/fabricserveraudit.schema.json",
+  "enabled": true,
+  "logSuccessfulJoins": true,
+  "logDisconnects": true,
+  "logRemoteAddress": true,
+  "logOnlineMode": true,
+  "logUuid": true
+}
