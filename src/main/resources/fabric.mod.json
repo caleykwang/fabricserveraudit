@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "fabricserveraudit",
+  "version": "${version}",
+  "name": "Fabric Server Audit",
+  "description": "Server-side connection audit logging for Fabric Minecraft servers.",
+  "authors": [
+    "caleykwang"
+  ],
+  "contact": {
+    "homepage": "https://github.com/caleykwang/fabricserveraudit",
+    "sources": "https://github.com/caleykwang/fabricserveraudit"
+  },
+  "license": "MIT",
+  "environment": "server",
+  "entrypoints": {
+    "server": [
+      "dev.caley.fabricserveraudit.FabricServerAudit"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.9",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
