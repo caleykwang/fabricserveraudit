@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/caleykwang/fabricserveraudit/main/schema/fabricserveraudit.schema.json",
+  "title": "Fabric Server Audit Config",
+  "description": "Configuration for server-side Minecraft connection audit logging.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable or disable audit logging."
+    },
+    "logSuccessfulJoins": {
+      "type": "boolean",
+      "default": true,
+      "description": "Log successful player joins."
+    },
+    "logDisconnects": {
+      "type": "boolean",
+      "default": true,
+      "description": "Log player disconnects."
+    },
+    "logRemoteAddress": {
+      "type": "boolean",
+      "default": true,
+      "description": "Include the remote socket address when available."
+    },
+    "logOnlineMode": {
+      "type": "boolean",
+      "default": true,
+      "description": "Include whether the server is running in online mode."
+    },
+    "logUuid": {
+      "type": "boolean",
+      "default": true,
+      "description": "Include the player's UUID."
+    }
+  },
+  "required": [
+    "enabled",
+    "logSuccessfulJoins",
+    "logDisconnects",
+    "logRemoteAddress",
+    "logOnlineMode",
+    "logUuid"
+  ]
+}
