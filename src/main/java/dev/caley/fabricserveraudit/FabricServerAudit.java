@@ -45,7 +45,7 @@ public final class FabricServerAudit implements DedicatedServerModInitializer {
     }
 
     private static String remoteAddress(ServerPlayNetworkHandler handler) {
-        SocketAddress address = handler.getConnection().getAddress();
+        SocketAddress address = handler.connection.getAddress();
         return address == null ? "unknown" : address.toString();
     }
 
