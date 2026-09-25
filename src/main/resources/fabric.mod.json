@@ -3,7 +3,7 @@
   "id": "fabricserveraudit",
   "version": "${version}",
   "name": "Fabric Server Audit",
-  "description": "Server-side connection audit logging for Fabric Minecraft servers.",
+  "description": "Server-side connection and mod audit logging for Fabric Minecraft servers.",
   "authors": [
     "caleykwang"
   ],
@@ -18,6 +18,9 @@
       "dev.caley.fabricserveraudit.FabricServerAudit"
     ]
   },
+  "mixins": [
+    "fabricserveraudit.mixins.json"
+  ],
   "depends": {
     "fabricloader": ">=0.16.9",
     "minecraft": "~1.21.1",
