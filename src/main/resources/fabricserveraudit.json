@@ -5,5 +5,6 @@
   "logDisconnects": true,
   "logRemoteAddress": true,
   "logOnlineMode": true,
-  "logUuid": true
+  "logUuid": true,
+  "logLoadedMods": true
 }
