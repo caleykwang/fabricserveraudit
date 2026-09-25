@@ -3,6 +3,9 @@ package dev.caley.fabricserveraudit;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
+import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -10,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.SocketAddress;
+import java.util.Comparator;
 
 public final class FabricServerAudit implements DedicatedServerModInitializer {
     public static final String MOD_ID = "fabricserveraudit";
@@ -22,6 +26,7 @@ public final class FabricServerAudit implements DedicatedServerModInitializer {
         ServerLifecycleEvents.SERVER_STARTED.register(startedServer -> {
             server = startedServer;
             LOGGER.info("Fabric Server Audit enabled; onlineMode={}", startedServer.isOnlineMode());
+            auditLoadedMods();
         });
 
         ServerPlayConnectionEvents.JOIN.register((handler, sender, joinedServer) -> {
@@ -44,9 +49,29 @@ public final class FabricServerAudit implements DedicatedServerModInitializer {
         });
     }
 
+    private static void auditLoadedMods() {
+        var mods = FabricLoader.getInstance().getAllMods().stream()
+                .sorted(Comparator.comparing(mod -> mod.getMetadata().getId()))
+                .toList();
+
+        LOGGER.info("mod_audit_start loadedModCount={}", mods.size());
+        for (ModContainer mod : mods) {
+            ModMetadata metadata = mod.getMetadata();
+            LOGGER.info("mod_loaded id={} name={} version={}",
+                    metadata.getId(),
+                    quote(metadata.getName()),
+                    metadata.getVersion().getFriendlyString());
+        }
+        LOGGER.info("mod_audit_end loadedModCount={}", mods.size());
+    }
+
     private static String remoteAddress(ServerPlayNetworkHandler handler) {
         SocketAddress address = handler.connection.getAddress();
         return address == null ? "unknown" : address.toString();
+    }
+
+    private static String quote(String value) {
+        return '"' + value.replace("\\", "\\\\").replace("\"", "\\\"") + '"';
     }
 
     public static MinecraftServer getServer() {
