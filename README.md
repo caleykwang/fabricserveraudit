@@ -1,39 +1,69 @@
 # Fabric Server Audit
 
-Fabric Server Audit is a server-side Minecraft Fabric mod for testing audit logging on Fabric servers. The current implementation starts with connection events, but the broader goal is to help server owners audit security-relevant server state, including installed server-side mods, configuration changes, authentication settings, and player connection activity.
+Fabric Server Audit is a server-side Minecraft Fabric mod for testing audit logging on Fabric servers. It records player connection activity and startup mod inventory data so server owners can review security-relevant server state in a controlled environment.
 
 This project is early-stage and intended for controlled test environments while the event model, log format, mod-audit model, and privacy controls are being shaped.
 
 ## What It Logs Today
 
-The first milestone records successful player joins and disconnects through Fabric API server events.
+The current milestone records successful player joins, disconnects, and loaded Fabric mods during server startup.
 
-Current log fields:
+Connection log fields can include:
 
 - event type, such as `player_join` or `player_disconnect`
 - player username
 - player UUID
-- remote socket address when available
+- remote socket address when enabled
 - server online-mode status
 
-Example log shape:
+Example connection log shape:
 
 ```text
 player_join username=ExamplePlayer uuid=00000000-0000-0000-0000-000000000000 remoteAddress=/127.0.0.1:54321 onlineMode=true
 ```
 
-## What It Should Audit Next
+Startup mod audit logs include:
 
-The next major direction is server-side mod auditing. A useful server audit tool should help answer questions like:
+- total loaded mod count
+- mod ID
+- mod name
+- mod version
 
-- Which server-side mods are installed?
-- Which mod IDs, names, and versions are present at startup?
-- Did the mod list change between server runs?
-- Are unknown, unexpected, or locally modified mods present?
-- Do any security-relevant config files change unexpectedly?
-- Are authentication, whitelist, or permission settings drifting over time?
+Example mod audit shape:
 
-The intended path is to capture a baseline snapshot in a test environment, then compare later server starts against that baseline. That would make it easier to spot accidental changes, suspicious additions, or configuration drift.
+```text
+mod_audit_start loadedModCount=42
+mod_loaded id=fabric-api name="Fabric API" version=0.110.0+1.21.1
+mod_audit_end loadedModCount=42
+```
+
+## Configuration
+
+On first server start, the mod creates a runtime config file at:
+
+```text
+config/fabricserveraudit.json
+```
+
+Current options:
+
+```json
+{
+  "enabled": true,
+  "logSuccessfulJoins": true,
+  "logDisconnects": true,
+  "logRemoteAddress": true,
+  "logOnlineMode": true,
+  "logUuid": true,
+  "logLoadedMods": true
+}
+```
+
+A JSON schema for editor validation lives at:
+
+```text
+schema/fabricserveraudit.schema.json
+```
 
 ## Why This Exists
 
@@ -68,7 +98,7 @@ The mod can log remote addresses, which usually include IP addresses. In a contr
 
 Before production use, this project should support and document:
 
-- disabling remote address logging
+- disabling remote address logging, currently available with `logRemoteAddress: false`
 - redacting or hashing remote addresses
 - limiting log access to trusted admins
 - setting log retention expectations
@@ -101,38 +131,20 @@ The compiled mod jar will be written under:
 build/libs/
 ```
 
-## Configuration Schema
-
-The repo includes a starter JSON schema at:
-
-```text
-schema/fabricserveraudit.schema.json
-```
-
-A starter config lives at:
-
-```text
-src/main/resources/fabricserveraudit.json
-```
-
-The schema is currently ahead of runtime config loading. It documents the intended controls while the implementation is still being built out.
-
 ## Roadmap
 
 Near-term work:
 
-- make config loading real instead of schema-only
 - add optional remote-address redaction or hashing
 - make log output more structured and stable
-- add a startup snapshot of loaded server-side mods
-- record mod ID, mod name, version, and source file where available
+- record mod source file where available
+- add baseline comparison for mod-list changes
 - add rejected-login diagnostics once the exact Minecraft server version is locked
 - document a safe test-server workflow
 - add release artifacts once CI builds cleanly
 
 Later possibilities:
 
-- baseline comparison for mod-list changes
 - whitelist and authentication snapshots
 - change detection for security-relevant server files
 - JSON Lines output for downstream analysis
