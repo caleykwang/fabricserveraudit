@@ -22,33 +22,64 @@ public final class FabricServerAudit implements DedicatedServerModInitializer {
     private static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     private static MinecraftServer server;
+    private static AuditConfig config = new AuditConfig();
 
     @Override
     public void onInitializeServer() {
+        config = AuditConfig.load(LOGGER);
+
         ServerLifecycleEvents.SERVER_STARTED.register(startedServer -> {
             server = startedServer;
-            LOGGER.info("Fabric Server Audit enabled; onlineMode={}", startedServer.isOnlineMode());
-            auditLoadedMods();
+            if (!config.enabled) {
+                LOGGER.info("Fabric Server Audit is disabled by config");
+                return;
+            }
+
+            LOGGER.info("Fabric Server Audit enabled{}",
+                    config.logOnlineMode ? " onlineMode=" + startedServer.isOnlineMode() : "");
+
+            if (config.logLoadedMods) {
+                auditLoadedMods();
+            }
         });
 
         ServerPlayConnectionEvents.JOIN.register((handler, sender, joinedServer) -> {
             server = joinedServer;
-            ServerPlayerEntity player = handler.getPlayer();
-            LOGGER.info("player_join username={} uuid={} remoteAddress={} onlineMode={}",
-                    player.getGameProfile().getName(),
-                    player.getUuidAsString(),
-                    remoteAddress(handler),
-                    joinedServer.isOnlineMode());
+            if (!config.enabled || !config.logSuccessfulJoins) {
+                return;
+            }
+
+            logPlayerEvent("player_join", handler, joinedServer);
         });
 
         ServerPlayConnectionEvents.DISCONNECT.register((handler, disconnectedServer) -> {
-            ServerPlayerEntity player = handler.getPlayer();
-            LOGGER.info("player_disconnect username={} uuid={} remoteAddress={} onlineMode={}",
-                    player.getGameProfile().getName(),
-                    player.getUuidAsString(),
-                    remoteAddress(handler),
-                    disconnectedServer.isOnlineMode());
+            if (!config.enabled || !config.logDisconnects) {
+                return;
+            }
+
+            logPlayerEvent("player_disconnect", handler, disconnectedServer);
         });
+    }
+
+    private static void logPlayerEvent(String eventName, ServerPlayNetworkHandler handler, MinecraftServer eventServer) {
+        ServerPlayerEntity player = handler.getPlayer();
+        StringBuilder message = new StringBuilder(eventName)
+                .append(" username=")
+                .append(player.getGameProfile().getName());
+
+        if (config.logUuid) {
+            message.append(" uuid=").append(player.getUuidAsString());
+        }
+
+        if (config.logRemoteAddress) {
+            message.append(" remoteAddress=").append(remoteAddress(handler));
+        }
+
+        if (config.logOnlineMode) {
+            message.append(" onlineMode=").append(eventServer.isOnlineMode());
+        }
+
+        LOGGER.info(message.toString());
     }
 
     private static void auditLoadedMods() {
