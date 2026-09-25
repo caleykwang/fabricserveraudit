@@ -1,11 +1,13 @@
 package dev.caley.fabricserveraudit;
 
+import dev.caley.fabricserveraudit.mixin.ServerCommonNetworkHandlerAccessor;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModMetadata;
+import net.minecraft.network.ClientConnection;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -66,7 +68,8 @@ public final class FabricServerAudit implements DedicatedServerModInitializer {
     }
 
     private static String remoteAddress(ServerPlayNetworkHandler handler) {
-        SocketAddress address = handler.connection.getAddress();
+        ClientConnection connection = ((ServerCommonNetworkHandlerAccessor) handler).fabricserveraudit$getConnection();
+        SocketAddress address = connection.getAddress();
         return address == null ? "unknown" : address.toString();
     }
 
